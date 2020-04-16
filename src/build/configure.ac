@@ -444,14 +444,10 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[extern "C"
 
 AC_ARG_ENABLE( [libz-linking],
                AS_HELP_STRING(--disable-libz-linking, [disable linking with libz and disable libz compression support]),
-               [explicit_libz_linking=yes],
-               [enable_libz_linking=yes])
+               [enable_libz_linking=$enableval],
+               [enable_libz_linking=check])
 
-AS_IF(       [test "x$enable_libz_linking" != "xyes"],
-             [
-                AC_MSG_WARN([libz compression support has been disabled by user])
-                local_libz="no"
-             ],
+AS_IF(       [test "x$enable_libz_linking" != "xno"],
              [
                AC_CHECK_LIB(z, [deflate], [], [AC_MSG_WARN([library zlib not found])])
                AC_CHECK_HEADER(zlib.h, [local_libz="yes"
@@ -474,25 +470,24 @@ AS_IF(       [test "x$enable_libz_linking" != "xyes"],
                               [ AC_DEFINE(LIBZ_AVAILABLE, 1, [header and linking is available to have libz functions])],
                               [ local_libz="no" ])
                else
-                 AC_MSG_WARN([libz compression support not available])
+		  AS_IF( [ test "x$enable_libz_linking" = "xyes" ],
+			 [ AC_MSG_ERROR([libz linking requested but cannot find libz]) ],
+			 [ AC_MSG_WARN([libz compression support not available])]
+		       )
                fi
 
-               AS_IF( [ test "x$explicit_libz_linking" = "xyes" -a "$local_libz" != "yes" ],
-                      [  AC_MSG_ERROR([libz linking failed]) ]
-                    )
-             ]
+	     ], [
+		  AC_MSG_WARN([libz compression support has been disabled by user])
+		  local_libz="no"
+		]
      )
 
 AC_ARG_ENABLE([libbz2-linking],
               AS_HELP_STRING(--disable-libbz2-linking, [disable linking with libbz2 and disables libbz2 compression support]),
-              [explicit_libbz2_linking=yes],
-              [enable_libbz2_linking=yes])
+              [enable_libbz2_linking=$enableval],
+              [enable_libbz2_linking=check])
 
-AS_IF(      [test "x$enable_libbz2_linking" != "xyes"],
-            [
-               AC_MSG_WARN([libbz2 compression support has been disabled by user])
-               local_libbz2="no"
-            ],
+AS_IF(      [test "x$enable_libbz2_linking" != "xno"],
             [
                AC_CHECK_LIB(bz2, [BZ2_bzCompress], [], [AC_MSG_WARN([library libbz2 not found])])
                AC_CHECK_HEADER(bzlib.h, [local_libbz2="yes"
@@ -515,13 +510,15 @@ AS_IF(      [test "x$enable_libbz2_linking" != "xyes"],
                                 [ AC_DEFINE(LIBBZ2_AVAILABLE, 1, [header and linking is available to have libbz2 functions])],
                                 [ local_libbz2="no" ])
                else
-                  AC_MSG_WARN([libbz2 compression support not available])
+		  AS_IF( [ test "x$enable_libbz2_linking" = "xyes" ],
+			 [ AC_MSG_ERROR([libbz2 linking requested but cannot find libbz2]) ],
+			 [ AC_MSG_WARN([libbz2 compression support not available])]
+		       )
                fi
-
-               AS_IF( [ test "x$explicit_libbz2_linking" = "xyes" -a "$local_libbz2" != "yes" ],
-                      [ AC_MSG_ERROR([libbz2 linking failed]) ]
-                    )
-           ]
+	   ],[
+	       AC_MSG_WARN([libbz2 compression support has been disabled by user])
+	       local_libbz2="no"
+	     ]
      )
 
 AC_ARG_ENABLE( [liblzo2-linking],
